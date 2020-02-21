@@ -9,7 +9,7 @@ class Automato(object):
         self.inicial = 0
         self.finais = []
         self.adjacencia = {}
-        self.nome_arq = 'automato.cpp'
+        self.nome_arq = ''
 
     def menu(self):
         """."""
@@ -51,6 +51,9 @@ class Automato(object):
             tmp = [int(i) for i in tmp]
 
             self.adjacencia[item] = list(zip(self.simbolos, tmp))
+
+        nome = input('Nome do arquivo (automato): ').strip()
+        self.nome_arq = (nome and nome or 'automato') + '.cpp'
 
 
 automato = Automato()
