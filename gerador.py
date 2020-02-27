@@ -1,3 +1,7 @@
+#!/usr/bin/python3.7
+# -*- coding: utf-8 -*-
+
+
 class Automato(object):
     """."""
 
@@ -10,6 +14,28 @@ class Automato(object):
         self.finais = []
         self.adjacencia = {}
         self.nome_arq = ''
+
+    def header(self):
+        """Gera o header basico de um programa em c++."""
+        return "#include <iostream>\n#include <string>\n\n" +\
+            "using namespace std;\n\nstring fita;\nint index = 0;"
+
+    def proto_func(self):
+        """."""
+        s = []
+        for item in range(0, self.qtd_est):
+            s.append('void %s();' % self.estados[item])
+
+        return '\n'.join(s)
+
+    def mk_default_func(self):
+        """."""
+        aceita = """void ACEITA(){\n\tcout << "ACEITA";\n}"""
+        rejeita = """void REJEITA(){\n\tcout << "REJEITA";\n}"""
+        main = ("int main() {\n\tgetline(cin, fita);\n\t%s;\n}" % (
+                self.estados[self.inicial]))
+
+        return '\n'.join((aceita, rejeita, main))
 
     def menu(self):
         """."""
@@ -54,6 +80,10 @@ class Automato(object):
 
         nome = input('Nome do arquivo (automato): ').strip()
         self.nome_arq = (nome and nome or 'automato') + '.cpp'
+
+        print(self.header())
+        print(self.proto_func())
+        print(self.mk_default_func())
 
 
 automato = Automato()
