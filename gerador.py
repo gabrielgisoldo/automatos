@@ -15,14 +15,55 @@ class Automato(object):
         self.adjacencia = {}
         self.nome_arq = ''
 
+    def _indent(self, texto):
+        """."""
+        return texto.replace('<sp>', '    ')
+
+    def _gerar_if(self, vetor, nivel=1):
+        if not vetor:
+            return ""
+        if len(vetor) == 1:
+            item = vetor.pop()
+            nf = self.estados[item[1]]
+
+            if isinstance(item[0], int):
+                aux = (("<sp>if(fita[index] == %s){\n<spp>index++;\n<spp>" +
+                        "%s();\n<sp>}else{\n<spp>REJEITA();\n<sp>}") % (
+                    item[0], nf))
+            else:
+                aux = (("<sp>if(fita[index] == '%s'){\n<spp>index++;\n<spp>" +
+                        "%s();\n<sp>}else{\n<spp>REJEITA();\n<sp>}") % (
+                    item[0], nf))
+
+            return aux.replace('<sp>', '    ' * nivel).\
+                replace('<spp>', '    ' * (nivel + 1))
+        else:
+            item = vetor.pop()
+            r = self._gerar_if(vetor, (nivel + 1))
+            nf = self.estados[item[1]]
+
+            if isinstance(item[0], int):
+                aux = (("<sp>if(fita[index] == %s){\n<spp>index++;\n<spp>" +
+                        "%s();\n<sp>}else{\n%s\n<sp>}") % (
+                    item[0], nf, r))
+            else:
+                aux = (("<sp>if(fita[index] == '%s'){\n<spp>index++;\n<spp>" +
+                        "%s();\n<sp>}else{\n%s\n<sp>}") % (
+                    item[0], nf, r))
+
+            return aux.replace('<sp>', '    ' * nivel).\
+                replace('<spp>', '    ' * (nivel + 1))
+
     def header(self):
         """Gera o header basico de um programa em c++."""
-        return "#include <iostream>\n#include <string>\n\n" +\
-            "using namespace std;\n\nstring fita;\nint index = 0;"
+        s = ["#include <iostream>", "#include <string>", "",
+             "using namespace std;", "", "string fita;", "int index = 0;"]
+
+        return '\n'.join(s)
 
     def proto_func(self):
         """."""
-        s = []
+        s = ["void ACEITA();", "void REJEITA();"]
         for item in range(0, self.qtd_est):
             s.append('void %s();' % self.estados[item])
 
@@ -30,12 +71,26 @@ class Automato(object):
 
     def mk_default_func(self):
         """."""
-        aceita = """void ACEITA(){\n\tcout << "ACEITA";\n}"""
-        rejeita = """void REJEITA(){\n\tcout << "REJEITA";\n}"""
-        main = ("int main() {\n\tgetline(cin, fita);\n\t%s;\n}" % (
+        aceita = """void ACEITA(){\n<sp>cout << "ACEITA";\n}"""
+        rejeita = """void REJEITA(){\n<sp>cout << "REJEITA";\n}"""
+        main = (
+            ("int main() {\n<sp>getline(cin, fita);\n<sp>%s" +
+             "();\n<sp>cin.get();\n<sp>return 0;\n}") % (
                 self.estados[self.inicial]))
 
         return '\n'.join((aceita, rejeita, main))
+
+    def funcoes(self):
+        """."""
+        ret = []
+        base = 'void %s(){\n%s\n}'
+        for i in range(self.qtd_est):
+            tmp = [item for item in self.adjacencia[i] if item[1] > -1]
+            if i in self.finais:
+                tmp.append((0, 'aceita'))
+            ret.append(base % (self.estados[i], self._gerar_if(vetor=tmp)))
+
+        return '\n'.join(ret)
 
     def menu(self):
         """."""
@@ -45,7 +100,7 @@ class Automato(object):
             "Quais os simbolos da linguagem?(separados por espaço): "
         ).strip().split(' ')
         self.qtd_est = int(input("Quantidade de estados: ").strip())
-        self.estados = {}
+        self.estados = {"aceita": "ACEITA"}
         for item in range(0, self.qtd_est):
             tmp = input("Qual o nome do estado %s: " % item).strip()
             self.estados[item] = tmp
@@ -81,9 +136,10 @@ class Automato(object):
         nome = input('Nome do arquivo (automato): ').strip()
         self.nome_arq = (nome and nome or 'automato') + '.cpp'
 
-        print(self.header())
-        print(self.proto_func())
-        print(self.mk_default_func())
+        print(self._indent(self.header()))
+        print(self._indent(self.proto_func()))
+        print(self._indent(self.funcoes()))
+        print(self._indent(self.mk_default_func()))
 
 
 automato = Automato()
