@@ -1,6 +1,6 @@
-#!/usr/bin/python3.7
 # -*- coding: utf-8 -*-
 from Automata import AutomataFunction, AutomataGoTo
+import os
 
 
 class AutomataGenerator(object):
@@ -42,7 +42,15 @@ class AutomataGenerator(object):
                 finals=self.finals)
 
         output = self._header() + self.automata.make()
-        print(output)
+
+        if not os.path.exists('output'):
+            os.makedirs('output')
+
+        with open('output/' + self.file_name, 'w') as f:
+            f.write(output)
+            f.close()
+
+        print("Arquivo gerado.")
 
     def menu(self):
         """."""
@@ -92,7 +100,7 @@ class AutomataGenerator(object):
             self.adjacency[item] = list(zip(self.symbols, tmp))
 
         name = input('Nome do arquivo (automato): ').strip()
-        self.file_name = (name and name or 'automato') + '.cpp'
+        self.file_name = (name and name or 'automato').split('.')[0] + '.cpp'
 
         self.type = int(
             input("1 - Function\n2 - GOTO\nSelecione o tipo: ")
