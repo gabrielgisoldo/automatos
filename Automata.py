@@ -52,6 +52,7 @@ class AutomataFunction(object):
             s.append('void %s();' % self.states[item])
         else:
             s.append("")
+            s.append("")
 
         return '\n'.join(s)
 
@@ -60,16 +61,16 @@ class AutomataFunction(object):
         accept = self._indent(text='void ACCEPT(){\n<sp>cout << "ACCEPT";\n}')
         reject = self._indent(text='void REJECT(){\n<sp>cout << "REJECT";\n}')
         main = self._indent(
-            text='int main() {\n<sp>cout << "Input the word:";\n<sp>' +
+            text='int main() {\n<sp>cout << "Input the word: ";\n<sp>' +
             'getline(cin, tape);\n<sp>%s();\n<sp>cin.get();\n' +
             '<sp>return 0;\n}') % self.states[self.initial]
 
-        return '\n'.join(("", accept, reject, main, ""))
+        return '\n'.join(("", accept, "", reject, "", main, ""))
 
     def _functions(self):
         """."""
         r = []
-        base = 'void %s(){\n%s\n}'
+        base = 'void %s(){\n%s\n}\n'
         for i in range(self.qty_est):
             tmp = [item for item in self.adjacency[i] if item[1] > -1]
             if i in self.finals:
@@ -109,10 +110,10 @@ class AutomataGoTo(object):
 
             if isinstance(item[0], int):
                 aux = ("<sp>if(tape[index] == %s){\n<spp>index++;\n<spp>" +
-                       "%s();\n<sp>}else{\n<spp>REJECT();\n<sp>}")
+                       "goto %s;\n<sp>}else{\n<spp>goto REJECT;\n<sp>}")
             else:
                 aux = ("<sp>if(tape[index] == '%s'){\n<spp>index++;\n<spp>" +
-                       "%s();\n<sp>}else{\n<spp>REJECT();\n<sp>}")
+                       "goto %s;\n<sp>}else{\n<spp>goto REJECT;\n<sp>}")
 
             return self._indent(text=aux, level=level) % (item[0], nf)
         else:
@@ -122,46 +123,41 @@ class AutomataGoTo(object):
 
             if isinstance(item[0], int):
                 aux = ("<sp>if(tape[index] == %s){\n<spp>index++;\n<spp>" +
-                       "%s();\n<sp>}else{\n%s\n<sp>}")
+                       "goto %s;\n<sp>}else{\n%s\n<sp>}")
             else:
                 aux = ("<sp>if(tape[index] == '%s'){\n<spp>index++;\n<spp>" +
-                       "%s();\n<sp>}else{\n%s\n<sp>}")
+                       "goto %s;\n<sp>}else{\n%s\n<sp>}")
 
             return self._indent(text=aux, level=level) % (item[0], nf, r)
 
-    def _proto_func(self):
-        """."""
-        s = ["void ACCEPT();", "void REJECT();"]
-        for item in range(0, self.qty_est):
-            s.append('void %s();' % self.states[item])
-        else:
-            s.append("")
-
-        return '\n'.join(s)
-
-    def _main(self):
-        """."""
-        accept = """void ACCEPT(){\n<sp>cout << "ACCEPT";\n}"""
-        reject = """void REJECT(){\n<sp>cout << "REJECT";\n}"""
-        main = ("int main() {\n<sp>getline(cin, tape);\n<sp>%s" +
-                "();\n<sp>cin.get();\n<sp>return 0;\n}")
-
-        main = self._indent(text=main) % self.states[self.initial]
-
-        return '\n'.join(("", accept, reject, main, ""))
-
     def _functions(self):
         """."""
-        ret = []
-        base = 'void %s(){\n%s\n}'
+        ret = ["",
+               self._indent(text='<sp>ACCEPT:\n<spp>cout << "ACCEPT";\n' +
+                            '<spp>goto EXIT;\n'),
+               self._indent(text='<sp>REJECT:\n<spp>cout << "REJECT";\n' +
+                            '<spp>goto EXIT;\n')]
+        base = '    %s:\n%s\n'
         for i in range(self.qty_est):
             tmp = [item for item in self.adjacency[i] if item[1] > -1]
             if i in self.finals:
                 tmp.append((0, 'accept'))
-            ret.append(base % (self.states[i], self._make_if(array=tmp)))
+            ret.append(base % (self.states[i], self._make_if(array=tmp,
+                                                             level=2)))
 
         return '\n'.join(ret)
 
-    def gerar(self):
+    def _main(self):
         """."""
-        return self._proto_func() + self._functions() + self._main()
+        main = self._indent(
+            text='int main() {\n<sp>cout << "Input the word: ";\n<sp>' +
+            'getline(cin, tape);\n<sp>goto %s;\n%s\n<sp>EXIT:\n' +
+            '<spp>cin.get();\n<spp>return 0;\n}')
+
+        main = main % (self.states[self.initial], self._functions())
+
+        return '\n'.join(("", main, ""))
+
+    def make(self):
+        """."""
+        return self._main()
