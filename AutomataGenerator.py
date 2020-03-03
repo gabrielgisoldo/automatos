@@ -22,8 +22,9 @@ class AutomataGenerator(object):
 
     def _header(self):
         """Make basic C++ header."""
-        s = ["#include <iostream>", "#include <string>", "",
-             "using namespace std;", "", "string tape;", "int index = 0;"]
+        s = ["#include <iostream>", "#include <string>", "#include <stdio.h>",
+             "", "using namespace std;", "", "string tape;", "int index = 0;",
+             "", ""]
 
         return '\n'.join(s)
 
