@@ -1,2 +1,2 @@
 # automatos
-Gerador de automatos em C
+Gerador de automatos em C++
