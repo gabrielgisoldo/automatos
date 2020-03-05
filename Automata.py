@@ -47,7 +47,7 @@ class AutomataFunction(object):
 
     def _proto_func(self):
         """."""
-        s = ["void ACCEPT();", "void REJECT();"]
+        s = []
         for item in range(0, self.qty_est):
             s.append('void %s();' % self.states[item])
         else:
@@ -81,7 +81,7 @@ class AutomataFunction(object):
 
     def make(self):
         """."""
-        return self._proto_func() + self._functions() + self._main()
+        return self._proto_func() + self._main() + self._functions()
 
 
 class AutomataGoTo(object):
