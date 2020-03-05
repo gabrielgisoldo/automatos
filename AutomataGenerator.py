@@ -50,7 +50,7 @@ class AutomataGenerator(object):
             f.write(output)
             f.close()
 
-        print("Arquivo gerado.")
+        input("Arquivo gerado...")
 
     def menu(self):
         """."""
